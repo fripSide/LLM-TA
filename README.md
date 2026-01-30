@@ -123,23 +123,31 @@ Raw Codes    Merged Codes         Themes              Final Report (MD)
 
 ## 自定义提示词
 
-编辑 `prompts.md` 可自定义 LLM 提示词：
+编辑 `prompts.md` 可针对不同分析阶段深度定制 LLM 提示词。每个阶段支持特定的变量占位符：
+
+| 阶段 | 变量 (占位符) | 描述 |
+| :--- | :--- | :--- |
+| **Coding** | `{research_questions}`, `{interview_text}` | 用于从原始访谈文本中提取编码 |
+| **Consolidate** | `{codes_json}` | 将多个访谈的原始编码合并为统一概念 |
+| **Theming** | `{codes_json}`, `{research_questions}` | 从合并后的编码中聚类生成主题 |
+| **Insight** | `{themes_json}`, `{research_questions}` | 针对研究问题提取高层洞察 |
+| **Discussion** | `{themes}`, `{insights}`, `{background}` | 编写学术讨论部分 |
+
+**示例配置 (`prompts.md`):**
 
 ```markdown
-## Coding Stage
-
-### System Prompt
-```
-Your system prompt here...
-```
+## Consolidate Stage
 
 ### User Prompt
-```
-Your user prompt with {research_questions}, {interview_text}...
-```
+这里是原始编码列表：
+{codes_json}
+
+请将意义相同的编码合并，并保留 "original_code_ids"。
+使用 JSON 格式输出。
 ```
 
-支持的阶段：Coding、Consolidate、Theming、Insight、Discussion
+> [!TIP]
+> 提示词文件中必须使用单花括号 `{var}` 作为占位符。程序在运行时会自动注入对应的数据。
 
 ## 访谈数据格式
 

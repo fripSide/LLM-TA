@@ -13,7 +13,11 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 from llm_ta.llm.client import LLMClient
+
+# Load .env variables
+load_dotenv()
 
 # LLM Validation Prompt for Report Quality
 REPORT_VALIDATION_PROMPT = '''
@@ -82,11 +86,12 @@ def test_workspace(tmp_path):
 def run_llm_ta(command: str, cwd: Path) -> subprocess.CompletedProcess:
     """Run llm-ta command using local source code."""
     project_root = Path(__file__).parent.parent
+    # We don't use capture_output=True here so that results appear in terminal
+    # but we still want to return the result for returncode check.
     result = subprocess.run(
         f"python -m llm_ta.cli {command}",
         shell=True,
         cwd=cwd,
-        capture_output=True,
         text=True,
         timeout=180,  # 3 minute timeout for LLM calls
         env={**os.environ, "PYTHONPATH": str(project_root)},
