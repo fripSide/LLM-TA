@@ -1,0 +1,16 @@
+# Consolidated Codebook - {{ project_name }}
+
+This file contains semantically merged codes. 
+Please review the merges below. If a merge is incorrect, you can edit this file.
+Check [x] to select codes for thematic analysis.
+
+{% for code in codes %}
+### {{ "[x]" if code.selected else "[ ]" }} {{ code.id }}: {{ code.name }}
+**Definition**: {{ code.description }}
+- **Evidence**:
+{% for occ in code.occurrences %}
+  - ({{ occ.participant_id }}): "{{ occ.source_quote }}"
+{% endfor %}
+<!-- END: {{ code.id }} -->
+
+{% endfor %}

@@ -37,3 +37,8 @@ Results：放overarching theme，包含大量用户原话
 Discussion: 放回答Research Questions的洞察
 
 user study论文的discussion不需要future work和limitation。主要是总结Results中的Insights并回答前面的research questions。
+
+
+## 参考论文  
+- LLM-Assisted Thematic Analysis: Opportunities, Limitations, and Recommendations
+- DeTAILS: Deep Thematic Analysis with Iterative LLM Support

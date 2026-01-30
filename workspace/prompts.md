@@ -63,6 +63,51 @@ Please extract codes comprehensively. Each interview should typically produce 20
 
 ---
 
+## Consolidate Stage
+
+### System Prompt
+
+```
+You are a "Codebook Manager" for a qualitative research study. Your job is to clean and consolidate a list of initial coding tags.
+```
+
+### User Prompt
+
+```
+Here is a list of raw codes from multiple interviews:
+{codes_json}
+
+**Task**:
+1. Identify codes that represent the **exact same concept** (e.g., "Forgot Password" vs "Memory failure regarding credentials").
+2. Merge them into a single, canonical code with a clear, academic label (in English).
+3. Do NOT merge distinct concepts (e.g., "Forgot Password" is different from "Password Rotation Fatigue").
+4. Provide a clear definition for the merged code.
+5. **CRITICAL**: You MUST include the "original_code_ids" field listing ALL source code IDs that were merged.
+
+## Output Format (STRICT)
+Please output in JSON format. Each merged code MUST include the "original_code_ids" array:
+```json
+{
+  "consolidated_codes": [
+    {
+      "id": "CC_01",
+      "name": "Cognitive Offloading",
+      "description": "Relying on external tools (notes, managers) to remember passwords.",
+      "original_code_ids": ["C005", "C023", "C041"]
+    }
+  ]
+}
+```
+
+**IMPORTANT REQUIREMENTS**:
+- Every consolidated code MUST have "id", "name", "description", and "original_code_ids" fields
+- "original_code_ids" MUST contain at least one ID from the input codes
+- If a code is unique and shouldn't be merged, include it with its own ID in original_code_ids
+- ALL input codes must be accounted for in the mapping
+```
+
+---
+
 ## Theming Stage
 
 ### System Prompt
@@ -207,28 +252,40 @@ Structure the discussion as follows:
 2. **(Optional) Other Insights**: Any other important notes.
    (Note: Do not include separate Limitations or Future Work sections unless critical)
 
-## Output Format
+## Output Format (STRICT)
+**CRITICAL**: Each section MUST have a non-empty "title" field. 
+
 Please output in JSON format:
 ```json
-{{
+{
   "sections": [
-    {{
-      "title": "RQ1: [Short Title]",
+    {
+      "title": "RQ1: How Users Manage Passwords",
       "content": "Full paragraph text answering RQ1...",
       "type": "rq_answer"
-    }},
-    {{
-      "title": "RQ2: [Short Title]",
+    },
+    {
+      "title": "RQ2: Security Perception Factors",
       "content": "...",
       "type": "rq_answer"
-    }}
+    },
+    {
+      "title": "Emergent Insight: Collaborative Authentication",
+      "content": "Other important finding not directly tied to RQs...",
+      "type": "insight"
+    }
   ],
   "rq_answers": [
-    {{
+    {
       "question": "Research question text",
       "answer": "Summary answer based on findings"
-    }}
+    }
   ]
-}}
+}
 ```
+
+**IMPORTANT REQUIREMENTS**:
+- Every section MUST have a non-empty "title" field
+- Titles should start with "RQ1:", "RQ2:", etc. for research question answers
+- Include at least one section for each Research Question
 ```

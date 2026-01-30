@@ -1,127 +1,127 @@
 [
   {
     "id": "C001",
-    "text": "Pattern-based password modification",
+    "text": "Pattern-based password generation strategy",
     "source_quote": "就还是用我那个老密码呗，后面加个1或者2。如果是必须要大写字母，我就把首字母大写。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C002",
-    "text": "Master password strategy",
-    "source_quote": "基本都是一个主密码变来变去。",
+    "text": "Reliance on a single master password",
+    "source_quote": "反正我记不住那么多密码，基本都是一个主密码变来变去。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C003",
-    "text": "Reliance on SMS/OTP over static passwords",
+    "text": "Perception of passwords as obsolete due to SMS login",
     "source_quote": "反正现在都能手机号登录，密码基本也就是个摆设。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C004",
-    "text": "Password reuse across related ecosystems",
-    "source_quote": "像支付宝登录密码，其实和我淘宝密码是一样的，因为是一家的嘛。",
+    "text": "Tiered security behavior based on asset value",
+    "source_quote": "银行卡那是6位数字密码，那个肯定不一样... 其他的网站，只要不是很重要的，我就随便设个简单的。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C005",
-    "text": "Financial loss as primary security motivator",
+    "text": "Financial loss as the primary security concern",
     "source_quote": "钱吧，肯定怕钱被转走。至于聊天记录啥的，也没啥见不得人的，不怕看。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C006",
-    "text": "Insecure storage in digital notes",
-    "source_quote": "所以我现在都把新改的密码写在手机备忘录里，不然根本记不住。",
+    "text": "Cognitive overload from complex security policies",
+    "source_quote": "每次强制改密码，我都得想半天，改完了下次肯定忘。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C007",
-    "text": "Low perceived personal risk/value",
-    "source_quote": "但我感觉跟我没啥关系，我也没什么钱。",
+    "text": "Unsecure storage of credentials in plain text",
+    "source_quote": "所以我现在都把新改的密码写在手机备忘录里，不然根本记不住。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C008",
-    "text": "Neglecting remediation after breach due to inconvenience",
-    "source_quote": "我就申诉找回来了，也没改密码，太麻烦了。",
+    "text": "Optimism bias regarding security threats",
+    "source_quote": "听说过啊，新闻里老说。但我感觉跟我没啥关系，我也没什么钱。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C009",
-    "text": "Biometrics prioritized for convenience rather than security",
-    "source_quote": "人脸识别我也开，主要是不是为了安全，是为了方便，不用输密码了嘛。",
+    "text": "Apathy towards post-breach security hygiene",
+    "source_quote": "我就申诉找回来了，也没改密码，太麻烦了。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C010",
+    "text": "Biometrics prioritized for convenience over security",
+    "source_quote": "人脸识别我也开，主要是不是为了安全，是为了方便，不用输密码了嘛。",
+    "participant_id": "P01",
+    "selected": false
+  },
+  {
+    "id": "C011",
     "text": "Account abandonment due to recovery friction",
     "source_quote": "最后它说我账号被锁定了，让我找客服。我一气之下就注册了个新的，不登了。",
     "participant_id": "P01",
     "selected": false
   },
   {
-    "id": "C011",
-    "text": "Unencrypted password sharing via messaging apps",
+    "id": "C012",
+    "text": "Unsecure password sharing via social apps",
     "source_quote": "视频会员经常借给朋友。我就直接微信发过去呗。",
     "participant_id": "P01",
     "selected": false
   },
   {
-    "id": "C012",
-    "text": "Ignoring security alerts",
-    "source_quote": "收到过，但我看了一眼，也不知道是真是假，就没管。",
-    "participant_id": "P01",
-    "selected": false
-  },
-  {
     "id": "C013",
-    "text": "Desire for passwordless experience",
-    "source_quote": "最好就是不用密码，走哪里都刷脸。",
+    "text": "Ignoring security alerts based on functional heuristics",
+    "source_quote": "收到过，但我看了一眼，也不知道是真是假，就没管。反正到现在号也能用，应该没事吧。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C014",
-    "text": "Security fatigue causing user churn",
-    "source_quote": "我觉得太麻烦了，有时候为了看个文章还得注册，我就直接关了不看了。",
+    "text": "Desire for zero-cognitive-load authentication",
+    "source_quote": "最好就是不用密码，走哪里都刷脸... 别让我动脑子去记那些乱七八糟的字符。",
     "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C015",
-    "text": "Context-dependent password creation strategy",
-    "source_quote": "看情况。如果是重要的，比如工作账号... 如果是一次性的网站，就浏览器自动生成一个强密码",
-    "participant_id": "P02",
+    "text": "Service abandonment due to registration fatigue",
+    "source_quote": "我觉得太麻烦了，有时候为了看个文章还得注册，我就直接关了不看了。",
+    "participant_id": "P01",
     "selected": false
   },
   {
     "id": "C016",
-    "text": "Pattern-based password construction for memory",
-    "source_quote": "我会由两个常用的单词组合加上当前的年份。",
+    "text": "Context-dependent password creation strategy",
+    "source_quote": "看情况。如果是重要的，比如工作账号，我会由两个常用的单词组合加上当前的年份。如果是一次性的网站，就浏览器自动生成一个强密码",
     "participant_id": "P02",
     "selected": false
   },
   {
     "id": "C017",
-    "text": "Reliance on browser autofill for retrieval",
+    "text": "Reliance on browser-based password managers",
     "source_quote": "先看 Chrome 浏览器有没有记住。如果记住了就直接填充。",
     "participant_id": "P02",
     "selected": false
   },
   {
     "id": "C018",
-    "text": "Tiered account security classification",
-    "source_quote": "设计了分级的。T1 是银行、主邮箱、微信... T2 是京东、美团... T3 就是各种论坛",
+    "text": "Tiered password security classification",
+    "source_quote": "设计了分级的。T1 是银行、主邮箱、微信，用最复杂的且不重复的。T2 是京东、美团这种，用另一套。T3 就是各种论坛",
     "participant_id": "P02",
     "selected": false
   },
@@ -134,120 +134,120 @@
   },
   {
     "id": "C020",
-    "text": "Perception of email as a single point of failure",
+    "text": "Perception of 'Domino Effect' risk via email compromise",
     "source_quote": "主邮箱被盗。因为很多其他账号都能通过邮箱找回密码。一旦邮箱丢了，就像多米诺骨牌一样全完了。",
     "participant_id": "P02",
     "selected": false
   },
   {
     "id": "C021",
-    "text": "Negative attitude toward mandatory password rotation",
-    "source_quote": "定期更换是最愚蠢的策略... 我每次遇到这种强制要求都很反感",
+    "text": "Negative perception of mandatory password rotation",
+    "source_quote": "定期更换是最愚蠢的策略。NIST 早就说不推荐定期更换了。",
     "participant_id": "P02",
     "selected": false
   },
   {
     "id": "C022",
-    "text": "Predictable modification patterns due to forced rotation",
-    "source_quote": "这只会逼着用户把密码改成 Password01, Password02... 只能被迫用一些规律性的变化。",
+    "text": "Predictable modification behavior due to forced rotation",
+    "source_quote": "这只会逼着用户把密码改成 Password01, Password02。我每次遇到这种强制要求都很反感，只能被迫用一些规律性的变化。",
     "participant_id": "P02",
     "selected": false
   },
   {
     "id": "C023",
-    "text": "Reactive security behavior following a breach",
-    "source_quote": "CSDN 泄露那次我就中招了。之后我就把所有重要账号密码全改了一遍。",
-    "participant_id": "P02",
-    "selected": false
-  },
-  {
-    "id": "C024",
-    "text": "Use of third-party tools to check for breaches",
+    "text": "Proactive use of breach monitoring tools",
     "source_quote": "现在看到那种大规模泄露的新闻，我会去 HaveIBeenPwned 查一下。",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C025",
-    "text": "Proactive adoption of Two-Factor Authentication (2FA)",
-    "source_quote": "只要支持 2FA 的我都开。特别是 Google Authenticator... 虽然稍微麻烦点，但心里踏实。",
+    "id": "C024",
+    "text": "Strong preference for 2FA/Authenticator apps",
+    "source_quote": "只要支持 2FA 的我都开。特别是 Google Authenticator，比短信安全。",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C026",
+    "id": "C025",
     "text": "Data loss due to forgotten credentials",
     "source_quote": "死活想不起来，密保问题的答案也忘了。最后只能放弃，里面的照片估计也没了。",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C027",
-    "text": "Physical recording for shared household passwords",
-    "source_quote": "比如 Netflix 账号给家里人用。我是直接写在便签纸上贴在家里 iPad 背面。",
+    "id": "C026",
+    "text": "Physical methods for password sharing",
+    "source_quote": "我是直接写在便签纸上贴在家里 iPad 背面。",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C028",
-    "text": "Obfuscation strategies when sharing passwords digitally",
+    "id": "C027",
+    "text": "Obfuscated digital sharing practices",
     "source_quote": "线上发的话，发完我会撤回，或者分两段发。",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C029",
-    "text": "Preference for passwordless/biometric authentication",
+    "id": "C028",
+    "text": "Desire for passwordless/biometric authentication",
     "source_quote": "就是像现在的 Passkey（通行密钥）那样吧。不需要密码，直接生物识别验证。",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C030",
-    "text": "Frustration with inconsistent password composition rules",
-    "source_quote": "很多网站的密码规则太奇葩了... 限制长度不能超过16位... 限制长度是帮黑客爆破吗？",
+    "id": "C029",
+    "text": "Frustration with inconsistent platform restrictions",
+    "source_quote": "很多网站的密码规则太奇葩了，有的不让用特殊符号，有的限制长度... 这我就很不理解",
     "participant_id": "P02",
     "selected": false
   },
   {
-    "id": "C031",
+    "id": "C030",
     "text": "Reliance on password manager for storage",
     "source_quote": "我用 1Password 管理，里面记录了大概 350 多个条目。",
     "participant_id": "P03",
     "selected": false
   },
   {
+    "id": "C031",
+    "text": "Generation of long random passwords",
+    "source_quote": "生成 20 位随机字符，保存，填入。",
+    "participant_id": "P03",
+    "selected": false
+  },
+  {
     "id": "C032",
-    "text": "Generation of long random characters",
-    "source_quote": "生成 20 位随机字符，保存，填入。我根本不知道那个密码是啥。",
+    "text": "Zero-knowledge strategy for specific passwords",
+    "source_quote": "我根本不知道那个密码是啥。",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C033",
-    "text": "Abandonment of unmanaged accounts",
+    "text": "Abandonment of untracked accounts",
     "source_quote": "如果没有... 那就说明我没注册过，或者当时注册那个号太不重要我都没存。没存的话基本就放弃了",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C034",
-    "text": "Unique passwords for every account",
+    "text": "Unique password for every account",
     "source_quote": "每一个，我是说每一个账号，密码都不一样。因为全是随机生成的。",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C035",
-    "text": "Physical backup for master password",
-    "source_quote": "所以我把主密码设得巨长，而且记在了一张纸条上放在保险柜里，以防我失忆。",
+    "text": "Physical backup of master password",
+    "source_quote": "记在了一张纸条上放在保险柜里，以防我失忆。",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C036",
-    "text": "Frustration with rigid composition rules",
-    "source_quote": "这种规则对真正的密码管理器用户很不友好。有时候生成的随机密码不符合它的规则（比如必须有大写），我还得手动调整。",
+    "text": "Frustration with rigid password composition rules",
+    "source_quote": "这种规则对真正的密码管理器用户很不友好。有时候生成的随机密码不符合它的规则",
     "participant_id": "P03",
     "selected": false
   },
@@ -260,36 +260,36 @@
   },
   {
     "id": "C038",
-    "text": "High learning curve barrier for others",
-    "source_quote": "每次听说我都会给朋友安利密码管理器，但由于上手门槛太高，他们基本都不用。",
+    "text": "Perceived high barrier to entry for password managers",
+    "source_quote": "但由于上手门槛太高，他们基本都不用。",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C039",
-    "text": "Preference for hardware/app-based 2FA",
+    "text": "Preference for Hardware/App-based 2FA over SMS",
     "source_quote": "我不用短信验证码，不安全。我用 YubiKey 这种硬件 Key，或者 Authy 这种 APP。",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C040",
-    "text": "Secure sharing via tool features",
-    "source_quote": "我用 1Password 的家庭共享功能... 绝对不通过微信发明文密码。",
+    "text": "Secure password sharing via family vault features",
+    "source_quote": "我用 1Password 的家庭共享功能。把需要的条目放到共享保险库里",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C041",
-    "text": "Usability friction in local apps",
-    "source_quote": "国内很多 APP 不支持标准的密码填充 API，导致还要手动切出去复制粘贴，体验极差。",
+    "text": "Desire for OS-level seamless integration",
+    "source_quote": "希望操作系统层面能打通，不管是在 PC 浏览器还是手机 APP，都能一键识别并填充。",
     "participant_id": "P03",
     "selected": false
   },
   {
     "id": "C042",
-    "text": "Desire for OS-level integration",
-    "source_quote": "希望操作系统层面能打通，不管是在 PC 浏览器还是手机 APP，都能一键识别并填充。",
+    "text": "Poor app compatibility with password autofill",
+    "source_quote": "国内很多 APP 不支持标准的密码填充 API，导致还要手动切出去复制粘贴，体验极差。",
     "participant_id": "P03",
     "selected": false
   }

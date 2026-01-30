@@ -1,0 +1,380 @@
+[
+  {
+    "id": "CC_001",
+    "name": "The practice of classifying accounts...",
+    "description": "The practice of classifying accounts based on perceived risk or asset value (e.g., banking vs. forums) and applying different levels of password complexity or management effort accordingly.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "银行卡那是6位数字密码，那个肯定不一样... 其他的网站，只要不是很重要的，我就随便设个简单的。",
+        "original_code_id": "C004"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "看情况。如果是重要的，比如工作账号，我会由两个常用的单词组合加上当前的年份。如果是一次性的网站，就浏览器自动生成一个强密码",
+        "original_code_id": "C016"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "设计了分级的。T1 是银行、主邮箱、微信，用最复杂的且不重复的。T2 是京东、美团这种，用另一套。T3 就是各种论坛",
+        "original_code_id": "C018"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_002",
+    "name": "A heuristic strategy where users...",
+    "description": "A heuristic strategy where users create or update passwords by applying predictable transformations (e.g., appending numbers, capitalization, or dates) to a base string or previous password, often to satisfy system requirements.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "就还是用我那个老密码呗，后面加个1或者2。如果是必须要大写字母，我就把首字母大写。",
+        "original_code_id": "C001"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "这只会逼着用户把密码改成 Password01, Password02。我每次遇到这种强制要求都很反感，只能被迫用一些规律性的变化。",
+        "original_code_id": "C022"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_003",
+    "name": "The intentional use of a...",
+    "description": "The intentional use of a single master password or a limited set of passwords across multiple accounts, typically applied to low-risk services to reduce cognitive load.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "反正我记不住那么多密码，基本都是一个主密码变来变去。",
+        "original_code_id": "C002"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "T3 就是各种论坛，基本全一样，丢了也无所谓。",
+        "original_code_id": "C019"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_004",
+    "name": "A strong desire to replace...",
+    "description": "A strong desire to replace knowledge-based authentication (passwords) with possession or inherence factors (biometrics, SMS, Passkeys) to improve convenience and reduce cognitive burden.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "反正现在都能手机号登录，密码基本也就是个摆设。",
+        "original_code_id": "C003"
+      },
+      {
+        "participant_id": "P01",
+        "source_quote": "人脸识别我也开，主要是不是为了安全，是为了方便，不用输密码了嘛。",
+        "original_code_id": "C010"
+      },
+      {
+        "participant_id": "P01",
+        "source_quote": "最好就是不用密码，走哪里都刷脸... 别让我动脑子去记那些乱七八糟的字符。",
+        "original_code_id": "C014"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "就是像现在的 Passkey（通行密钥）那样吧。不需要密码，直接生物识别验证。",
+        "original_code_id": "C028"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_005",
+    "name": "The reliance on unencrypted, external...",
+    "description": "The reliance on unencrypted, external memory aids to store credentials, including physical notes or plain-text digital memos (e.g., note-taking apps), posing a security risk.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "所以我现在都把新改的密码写在手机备忘录里，不然根本记不住。",
+        "original_code_id": "C007"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "我是直接写在便签纸上贴在家里 iPad 背面。",
+        "original_code_id": "C026"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "记在了一张纸条上放在保险柜里，以防我失忆。",
+        "original_code_id": "C035"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_006",
+    "name": "A state of exhaustion or...",
+    "description": "A state of exhaustion or indifference towards security hygiene, characterized by ignoring alerts or failing to update credentials after a breach due to the perceived effort required.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "我就申诉找回来了，也没改密码，太麻烦了。",
+        "original_code_id": "C009"
+      },
+      {
+        "participant_id": "P01",
+        "source_quote": "收到过，但我看了一眼，也不知道是真是假，就没管。反正到现在号也能用，应该没事吧。",
+        "original_code_id": "C013"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_007",
+    "name": "The decision to stop using...",
+    "description": "The decision to stop using a service or abandon an account creation process because the authentication or recovery procedures are perceived as too burdensome or restrictive.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "最后它说我账号被锁定了，让我找客服。我一气之下就注册了个新的，不登了。",
+        "original_code_id": "C011"
+      },
+      {
+        "participant_id": "P01",
+        "source_quote": "我觉得太麻烦了，有时候为了看个文章还得注册，我就直接关了不看了。",
+        "original_code_id": "C015"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "如果没有... 那就说明我没注册过，或者当时注册那个号太不重要我都没存。没存的话基本就放弃了",
+        "original_code_id": "C033"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_008",
+    "name": "The practice of sharing account...",
+    "description": "The practice of sharing account credentials through social messaging platforms, ranging from plain text transmission to obfuscated methods (e.g., retracting messages), often bypassing secure sharing tools.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "视频会员经常借给朋友。我就直接微信发过去呗。",
+        "original_code_id": "C012"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "线上发的话，发完我会撤回，或者分两段发。",
+        "original_code_id": "C027"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_009",
+    "name": "The use of dedicated software...",
+    "description": "The use of dedicated software or browser-based tools to store, manage, and autofill credentials, shifting the user's task from memorization to management.",
+    "occurrences": [
+      {
+        "participant_id": "P02",
+        "source_quote": "先看 Chrome 浏览器有没有记住。如果记住了就直接填充。",
+        "original_code_id": "C017"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "我用 1Password 管理，里面记录了大概 350 多个条目。",
+        "original_code_id": "C030"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_010",
+    "name": "User frustration with and skepticism...",
+    "description": "User frustration with and skepticism towards policies requiring periodic password changes, often viewed as 'security theater' that induces cognitive overload without adding real security.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "每次强制改密码，我都得想半天，改完了下次肯定忘。",
+        "original_code_id": "C006"
+      },
+      {
+        "participant_id": "P02",
+        "source_quote": "定期更换是最愚蠢的策略。NIST 早就说不推荐定期更换了。",
+        "original_code_id": "C021"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "定期更换也是，毫无意义的安全剧场。",
+        "original_code_id": "C037"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_011",
+    "name": "Dissatisfaction with inconsistent or rigid...",
+    "description": "Dissatisfaction with inconsistent or rigid password complexity requirements (e.g., character limits, symbol restrictions) that conflict with password managers or user heuristics.",
+    "occurrences": [
+      {
+        "participant_id": "P02",
+        "source_quote": "很多网站的密码规则太奇葩了，有的不让用特殊符号，有的限制长度... 这我就很不理解",
+        "original_code_id": "C029"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "这种规则对真正的密码管理器用户很不友好。有时候生成的随机密码不符合它的规则",
+        "original_code_id": "C036"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_012",
+    "name": "The strategy of generating long...",
+    "description": "The strategy of generating long, random, and unique character strings for every account, typically relying on software to handle the complexity and lack of memorability.",
+    "occurrences": [
+      {
+        "participant_id": "P03",
+        "source_quote": "生成 20 位随机字符，保存，填入。",
+        "original_code_id": "C031"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "我根本不知道那个密码是啥。",
+        "original_code_id": "C032"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "每一个，我是说每一个账号，密码都不一样。因为全是随机生成的。",
+        "original_code_id": "C034"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_013",
+    "name": "A specific preference for using...",
+    "description": "A specific preference for using hardware tokens or authenticator apps over SMS-based verification, driven by perceptions of higher security or reliability.",
+    "occurrences": [
+      {
+        "participant_id": "P02",
+        "source_quote": "只要支持 2FA 的我都开。特别是 Google Authenticator，比短信安全。",
+        "original_code_id": "C024"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "我不用短信验证码，不安全。我用 YubiKey 这种硬件 Key，或者 Authy 这种 APP。",
+        "original_code_id": "C039"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_014",
+    "name": "User difficulties arising from poor...",
+    "description": "User difficulties arising from poor integration between password management tools and operating systems or specific applications, leading to manual copying/pasting.",
+    "occurrences": [
+      {
+        "participant_id": "P03",
+        "source_quote": "希望操作系统层面能打通，不管是在 PC 浏览器还是手机 APP，都能一键识别并填充。",
+        "original_code_id": "C041"
+      },
+      {
+        "participant_id": "P03",
+        "source_quote": "国内很多 APP 不支持标准的密码填充 API，导致还要手动切出去复制粘贴，体验极差。",
+        "original_code_id": "C042"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_015",
+    "name": "The prioritization of security behaviors...",
+    "description": "The prioritization of security behaviors specifically to protect financial assets, often treating non-financial data as negligible.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "钱吧，肯定怕钱被转走。至于聊天记录啥的，也没啥见不得人的，不怕看。",
+        "original_code_id": "C005"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_016",
+    "name": "The cognitive bias where users...",
+    "description": "The cognitive bias where users believe they are unlikely to experience a security breach or cyberattack personally.",
+    "occurrences": [
+      {
+        "participant_id": "P01",
+        "source_quote": "听说过啊，新闻里老说。但我感觉跟我没啥关系，我也没什么钱。",
+        "original_code_id": "C008"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_017",
+    "name": "The awareness that compromising a...",
+    "description": "The awareness that compromising a central account (e.g., email) can lead to a 'domino effect' compromising all linked services.",
+    "occurrences": [
+      {
+        "participant_id": "P02",
+        "source_quote": "主邮箱被盗。因为很多其他账号都能通过邮箱找回密码。一旦邮箱丢了，就像多米诺骨牌一样全完了。",
+        "original_code_id": "C020"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_018",
+    "name": "The active use of third-party...",
+    "description": "The active use of third-party tools (e.g., HaveIBeenPwned) to check for credential exposure following news of data leaks.",
+    "occurrences": [
+      {
+        "participant_id": "P02",
+        "source_quote": "现在看到那种大规模泄露的新闻，我会去 HaveIBeenPwned 查一下。",
+        "original_code_id": "C023"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_019",
+    "name": "The permanent loss of access...",
+    "description": "The permanent loss of access to digital assets or memories resulting from the inability to recall credentials or recovery answers.",
+    "occurrences": [
+      {
+        "participant_id": "P02",
+        "source_quote": "死活想不起来，密保问题的答案也忘了。最后只能放弃，里面的照片估计也没了。",
+        "original_code_id": "C025"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_020",
+    "name": "The belief that secure tools...",
+    "description": "The belief that secure tools (like password managers) are too difficult for the average person to learn or set up.",
+    "occurrences": [
+      {
+        "participant_id": "P03",
+        "source_quote": "但由于上手门槛太高，他们基本都不用。",
+        "original_code_id": "C038"
+      }
+    ],
+    "selected": true
+  },
+  {
+    "id": "CC_021",
+    "name": "The use of dedicated security...",
+    "description": "The use of dedicated security features (e.g., family vaults) to share credentials, contrasting with ad-hoc methods.",
+    "occurrences": [
+      {
+        "participant_id": "P03",
+        "source_quote": "我用 1Password 的家庭共享功能。把需要的条目放到共享保险库里",
+        "original_code_id": "C040"
+      }
+    ],
+    "selected": true
+  }
+]

@@ -45,7 +45,13 @@
 {# --- Discussion Content --- #}
 {% if discussion.sections %}
 {% for section in discussion.sections %}
+{% if section.title %}
 ### {{ section.title }}
+{% elif section.type == 'rq_answer' %}
+### Research Question {{ loop.index }}
+{% else %}
+### Discussion Point {{ loop.index }}
+{% endif %}
 
 {{ section.content }}
 

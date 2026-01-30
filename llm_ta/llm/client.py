@@ -67,7 +67,7 @@ class LLMClient:
         self,
         messages: list[dict[str, str]],
         temperature: float = 0.3,
-        max_tokens: int = 4000,
+        max_tokens: int = 8192,
         retries: int = 3,
     ) -> dict[str, Any] | list:
         """Send a chat request and parse the response as JSON with retries."""
@@ -85,17 +85,29 @@ class LLMClient:
                 # Extract JSON from response text
                 text = response.strip()
                 
-                # Try to find JSON block
-                import re
-                json_match = re.search(r'(\{.*\}|\[.*\])', text, re.DOTALL)
-                if json_match:
-                    text = json_match.group(0)
+                # Find the first { or [ and the last } or ]
+                start_json = -1
+                end_json = -1
                 
-                # Remove potential markdown formatting remnants
+                # Basic bracket matching to find the outermost object/array
+                for i, char in enumerate(text):
+                    if char in '{[':
+                        start_json = i
+                        break
+                
+                for i, char in enumerate(reversed(text)):
+                    if char in '}]':
+                        end_json = len(text) - i
+                        break
+                
+                if start_json != -1 and end_json != -1:
+                    text = text[start_json:end_json]
+                
+                # Remove markdown formatting if still present
                 text = text.replace("```json", "").replace("```", "").strip()
                 
                 return json.loads(text)
-            except json.JSONDecodeError as e:
+            except (json.JSONDecodeError, ValueError) as e:
                 print(f"JSON Parse Error (Attempt {attempt + 1}/{retries}): {e}")
                 last_error = e
                 # Optionally increase temperature or add instruction about valid JSON?

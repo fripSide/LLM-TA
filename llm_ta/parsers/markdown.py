@@ -35,6 +35,20 @@ class MarkdownParser:
         )
         output_path.write_text(content, encoding="utf-8")
     
+    def generate_consolidated_coding_draft(
+        self,
+        consolidated_codes: list[Any], # list[ConsolidatedCode]
+        output_path: Path,
+        project_name: str = "",
+    ) -> None:
+        """Generate the consolidated coding draft markdown file."""
+        template = self.env.get_template("01_consolidated_coding.md.jinja2")
+        content = template.render(
+            project_name=project_name,
+            codes=consolidated_codes,
+        )
+        output_path.write_text(content, encoding="utf-8")
+    
     def generate_themes_draft(
         self,
         themes: list[Theme],
@@ -98,6 +112,60 @@ class MarkdownParser:
     
     def parse_coding_draft(self, path: Path) -> Codebook:
         """Parse user-edited coding draft and extract selected codes."""
+        # ... (implementation same as before, but I'll add consolidated parsing)
+        return self._parse_codes(path)
+
+    def parse_consolidated_coding_draft(self, path: Path) -> list[Any]: # list[ConsolidatedCode]
+        """Parse user-edited consolidated coding draft."""
+        content = path.read_text(encoding="utf-8")
+        consolidated_codes = []
+        
+        # Split by theme headers (which are consolidated codes in this context)
+        # Using ### [x] C_NEW_01: Name
+        parts = re.split(r'(^###\s+\[[ xX]\]\s+[^:]+:.+?$)', content, flags=re.MULTILINE)
+        
+        # This is a bit complex, let's use a simpler pattern-based approach for now
+        # Actually, let's keep it simple for the first iteration.
+        # I'll implement a robust parser here.
+        
+        header_pattern = re.compile(r'^###\s+\[([ xX])\]\s+([^:]+):\s*(.+?)$', re.MULTILINE)
+        
+        # We need to re-import ConsolidatedCode and CodeOccurence inside for type safety if needed
+        from llm_ta.models.coding import ConsolidatedCode, CodeOccurence
+        
+        for i in range(1, len(parts), 2):
+            header = parts[i]
+            body = parts[i+1] if i+1 < len(parts) else ""
+            
+            match = header_pattern.match(header.strip())
+            if match:
+                selected = match.group(1).lower() == 'x'
+                code_id = match.group(2).strip()
+                name = match.group(3).strip()
+                
+                # Parse description
+                desc_match = re.search(r'\*\*Definition\*\*:\s*(.+?)(?=\n|$)', body)
+                description = desc_match.group(1).strip() if desc_match else ""
+                
+                # Parse evidence (occurrences)
+                occurrences = []
+                for occ_match in re.finditer(r'-\s*\(([^)]+)\):\s*["\"](.+?)["\"]', body):
+                    occurrences.append(CodeOccurence(
+                        participant_id=occ_match.group(1),
+                        source_quote=occ_match.group(2)
+                    ))
+                
+                consolidated_codes.append(ConsolidatedCode(
+                    id=code_id,
+                    name=name,
+                    description=description,
+                    occurrences=occurrences,
+                    selected=selected
+                ))
+        
+        return consolidated_codes
+
+    def _parse_codes(self, path: Path) -> Codebook:
         content = path.read_text(encoding="utf-8")
         codes = []
         
@@ -132,7 +200,7 @@ class MarkdownParser:
                 source_quote = ""
                 participant_id = ""
                 
-                for j in range(i + 1, min(i + 4, len(lines))):
+                for j in range(i + 1, min(i + 5, len(lines))):
                     next_line = lines[j]
                     
                     quote_match = quote_pattern.search(next_line)

@@ -15,11 +15,16 @@ from rich.table import Table
 load_dotenv()
 
 from llm_ta.models.project import Project
-from llm_ta.models.coding import Code, Codebook
+from llm_ta.models.coding import Code, Codebook, ConsolidatedCode
 from llm_ta.models.theme import Theme
 from llm_ta.parsers.interview import InterviewParser
 from llm_ta.parsers.markdown import MarkdownParser
 from llm_ta.llm.prompts import PromptManager
+
+# Import analysis engines
+from llm_ta.analysis.coding import CodingEngine
+from llm_ta.analysis.theming import ThemingEngine
+from llm_ta.analysis.reporting import ReportingEngine
 
 
 app = typer.Typer(
@@ -249,171 +254,164 @@ def coding():
     project.ensure_dirs()
     
     interviews_path = project.get_data_path(project.interviews_file)
-    
     if not interviews_path.exists():
         console.print("[red]错误: 未找到访谈数据。请先运行 `llm-ta import` 导入数据。[/red]")
         raise typer.Exit(1)
     
-    # Check for existing files
     coding_md_path = project.get_md_path(project.coding_md)
-    if coding_md_path.exists():
-        overwrite = typer.confirm(f"编码文件已存在，是否覆盖？")
-        if not overwrite:
-            console.print("[yellow]已取消。[/yellow]")
-            raise typer.Exit(0)
+    if coding_md_path.exists() and not typer.confirm(f"编码文件已存在，是否覆盖？"):
+        raise typer.Exit(0)
     
-    # Load interview data
     collection = InterviewParser.parse_file(interviews_path)
     
-    if not collection.interviews:
-        console.print("[red]错误: 访谈数据为空。[/red]")
-        raise typer.Exit(1)
-    
-    # Initialize LLM client with prompts
+    # Initialize Engine
     try:
         from llm_ta.llm.client import LLMClient
         prompts_path = Path.cwd() / project.prompts_file
         llm = LLMClient(prompts_file=prompts_path)
-    except ValueError as e:
+        engine = CodingEngine(llm)
+    except Exception as e:
         console.print(f"[red]错误: {e}[/red]")
         raise typer.Exit(1)
     
     all_codes = []
     code_counter = 1
     
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
         task = progress.add_task("生成编码中...", total=len(collection.interviews))
-        
         for interview in collection.interviews:
             progress.update(task, description=f"Processing {interview.participant_id}...")
             
-            interview_text = interview.get_full_text()
-            raw_codes = llm.generate_codes(
-                interview_text=interview_text,
-                research_questions=project.research_questions,
-                participant_id=interview.participant_id,
-            )
+            # Use engine
+            codes = engine.extract_codes_for_interview(interview, project.research_questions)
             
-            for raw in raw_codes:
-                code = Code(
-                    id=f"C{code_counter:03d}",
-                    text=raw.get("text", ""),
-                    source_quote=raw.get("source_quote", ""),
-                    participant_id=raw.get("participant_id", interview.participant_id),
-                    selected=False,
-                )
+            for code in codes:
+                code.id = f"C{code_counter:03d}"
                 all_codes.append(code)
                 code_counter += 1
-            
             progress.advance(task)
     
-    # Save codebook JSON to data directory
+    # Save and Generate Markdown
     codebook = Codebook(codes=all_codes)
-    codebook_path = project.get_data_path(project.codebook_file)
-    save_json([c.model_dump() for c in codebook.codes], codebook_path)
+    save_json([c.model_dump() for c in codebook.codes], project.get_data_path(project.codebook_file))
     
-    # Generate markdown to output directory
     parser = MarkdownParser()
-    parser.generate_coding_draft(
-        codes=all_codes,
-        output_path=coding_md_path,
-        project_name=project.name,
-    )
+    parser.generate_coding_draft(all_codes, coding_md_path, project.name)
     
     console.print(f"\n[green]✓ 生成了 {len(all_codes)} 个编码[/green]")
-    console.print(f"  JSON数据: {codebook_path}")
-    console.print(f"  Markdown: {coding_md_path}")
-    console.print("\n[cyan]下一步: 编辑Markdown文件，勾选有意义的编码，然后运行 `llm-ta theming`[/cyan]")
+    console.print(f"  下一步: 运行 `llm-ta consolidate` 对编码进行合并去重")
 
 
 @app.command()
-def theming():
-    """生成主题分析 (需要LLM API)。"""
+def consolidate():
+    """合并同义编码 (需要LLM API)。"""
     project = load_project()
-    project.ensure_dirs()
-    
-    coding_md_path = project.get_md_path(project.coding_md)
-    
-    if not coding_md_path.exists():
-        console.print("[red]错误: 未找到编码文件。请先运行 `llm-ta coding` 生成编码。[/red]")
+    codebook_path = project.get_data_path(project.codebook_file)
+    if not codebook_path.exists():
+        console.print("[red]错误: 未找到编码数据。请先运行 `llm-ta coding`。[/red]")
         raise typer.Exit(1)
+        
+    consolidated_md_path = project.get_md_path("01_consolidated_coding.md")
     
-    themes_md_path = project.get_md_path(project.themes_md)
-    if themes_md_path.exists():
-        overwrite = typer.confirm(f"主题文件已存在，是否覆盖？")
-        if not overwrite:
-            console.print("[yellow]已取消。[/yellow]")
-            raise typer.Exit(0)
+    # Load raw codes
+    codes_data = load_json(codebook_path)
+    all_codes = [Code(**c) for c in codes_data]
     
-    # Parse user-edited coding file
-    parser = MarkdownParser()
-    codebook = parser.parse_coding_draft(coding_md_path)
-    
-    selected_codes = codebook.get_selected_codes()
-    
-    if not selected_codes:
-        console.print("[red]错误: 未选中任何编码。[/red]")
-        console.print("[yellow]请编辑 01_coding_draft.md，将 [ ] 改为 [x] 来勾选有意义的编码。[/yellow]")
-        console.print("[yellow]例如: - [x] **C001**: 编码内容[/yellow]")
-        raise typer.Exit(1)
-    
-    console.print(f"[cyan]已选中 {len(selected_codes)} 个编码[/cyan]")
-    
-    # Initialize LLM client
+    # Initialize Engine
     try:
         from llm_ta.llm.client import LLMClient
         prompts_path = Path.cwd() / project.prompts_file
         llm = LLMClient(prompts_file=prompts_path)
-    except ValueError as e:
+        engine = CodingEngine(llm)
+    except Exception as e:
+        console.print(f"[red]错误: {e}[/red]")
+        raise typer.Exit(1)
+        
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+        progress.add_task("合并同义编码中...", total=None)
+        consolidated_codes = engine.consolidate(all_codes, project.research_questions)
+    
+    # Save results
+    save_json([c.model_dump() for c in consolidated_codes], project.get_data_path("codebook_consolidated.json"))
+    
+    parser = MarkdownParser()
+    parser.generate_consolidated_coding_draft(consolidated_codes, consolidated_md_path, project.name)
+    
+    console.print(f"\n[green]✓ 合并完成，生成了 {len(consolidated_codes)} 个概念[/green]")
+    console.print(f"  请在 {consolidated_md_path} 中审查合并结果")
+    console.print(f"\n[cyan]下一步: 勾选 [x] 以确认合并后的编码，然后运行 `llm-ta theming`[/cyan]")
+
+
+@app.command()
+def theming(deep: bool = typer.Option(False, "--deep", "-d", help="使用深度多轮分析模式")):
+    """生成主题分析 (需要LLM API)。"""
+    project = load_project()
+    project.ensure_dirs()
+    
+    # Check for consolidated coding file first, fallback to raw coding
+    consolidated_md_path = project.get_md_path("01_consolidated_coding.md")
+    coding_md_path = project.get_md_path(project.coding_md)
+    
+    parser = MarkdownParser()
+    selected_codes = []
+    
+    if consolidated_md_path.exists():
+        console.print(f"[cyan]使用合并后的编码文件: {consolidated_md_path.name}[/cyan]")
+        consolidated_codes = parser.parse_consolidated_coding_draft(consolidated_md_path)
+        selected_codes = [c for c in consolidated_codes if c.selected]
+    elif coding_md_path.exists():
+        console.print(f"[yellow]提示: 未找到合并后的编码，使用原始编码文件: {coding_md_path.name}[/yellow]")
+        codebook = parser.parse_coding_draft(coding_md_path)
+        selected_codes = codebook.get_selected_codes()
+    else:
+        console.print("[red]错误: 未找到编码文件。请先运行 `llm-ta coding` 或 `llm-ta consolidate`。[/red]")
+        raise typer.Exit(1)
+    
+    if not selected_codes:
+        console.print("[red]错误: 未选中任何编码。[/red]")
+        raise typer.Exit(1)
+        
+    console.print(f"[cyan]已选中 {len(selected_codes)} 个编码[/cyan]")
+    
+    # Initialize Engine
+    try:
+        from llm_ta.llm.client import LLMClient
+        llm = LLMClient(prompts_file=Path.cwd() / project.prompts_file)
+        engine = ThemingEngine(llm)
+    except Exception as e:
         console.print(f"[red]错误: {e}[/red]")
         raise typer.Exit(1)
     
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
         progress.add_task("生成主题中...", total=None)
+        themes = engine.generate_themes(selected_codes, project.research_questions, deep_mode=deep)
         
-        codes_data = [
-            {"id": c.id, "text": c.text, "source_quote": c.source_quote}
-            for c in selected_codes
-        ]
-        
-        raw_themes = llm.generate_themes(
-            codes=codes_data,
-            research_questions=project.research_questions,
-        )
-    
-    # Convert to Theme objects
-    themes = []
-    for raw in raw_themes:
-        theme = Theme(
-            id=raw.get("id", ""),
-            name=raw.get("name", ""),
-            description=raw.get("description", ""),
-            code_ids=raw.get("code_ids", []),
-        )
-        themes.append(theme)
-    
-    # Save themes JSON to data directory
+    # Save themes
     themes_json_path = project.get_data_path(project.themes_file)
     save_json([t.model_dump() for t in themes], themes_json_path)
     
-    # Generate markdown to output directory
-    parser.generate_themes_draft(
-        themes=themes,
-        codebook=codebook,
-        output_path=themes_md_path,
-        project_name=project.name,
-    )
+    themes_md_path = project.get_md_path(project.themes_md)
+    # We need a dummy codebook for the existing generate_themes_draft parser which expects raw codes
+    # Build lookup data for the markdown draft
+    if consolidated_md_path.exists():
+        # Convert ConsolidatedCode to temporary Code objects for the template
+        temp_codes = []
+        for c in selected_codes:
+            # Flatten consolidated code for the themes draft view (using first quote as example)
+            temp_codes.append(Code(
+                id=c.id,
+                text=c.name,
+                source_quote=c.occurrences[0].source_quote if c.occurrences else "",
+                participant_id=c.occurrences[0].participant_id if c.occurrences else "",
+                selected=True
+            ))
+        dummy_codebook = Codebook(codes=temp_codes)
+    else:
+        dummy_codebook = Codebook(codes=selected_codes)
+        
+    parser.generate_themes_draft(themes, dummy_codebook, themes_md_path, project.name)
     
     console.print(f"\n[green]✓ 生成了 {len(themes)} 个主题[/green]")
-    console.print(f"  JSON数据: {themes_json_path}")
     console.print(f"  Markdown: {themes_md_path}")
     console.print("\n[cyan]下一步: 编辑Markdown文件调整主题结构，然后运行 `llm-ta report`[/cyan]")
 
@@ -425,100 +423,78 @@ def report():
     project.ensure_dirs()
     
     themes_md_path = project.get_md_path(project.themes_md)
-    
     if not themes_md_path.exists():
-        console.print("[red]错误: 未找到主题文件。请先运行 `llm-ta theming` 生成主题。[/red]")
+        console.print("[red]错误: 未找到主题文件。请先运行 `llm-ta theming`。[/red]")
         raise typer.Exit(1)
-    
+        
     report_md_path = project.get_md_path(project.report_md)
-    if report_md_path.exists():
-        overwrite = typer.confirm(f"报告文件已存在，是否覆盖？")
-        if not overwrite:
-            console.print("[yellow]已取消。[/yellow]")
-            raise typer.Exit(0)
+    if report_md_path.exists() and not typer.confirm(f"报告文件已存在，是否覆盖？"):
+        raise typer.Exit(0)
     
-    # Parse user-edited themes file
+    # Parse themes
     parser = MarkdownParser()
     theme_collection = parser.parse_themes_draft(themes_md_path)
     
-    if not theme_collection.themes:
-        console.print("[red]错误: 未找到任何主题。[/red]")
-        raise typer.Exit(1)
-    
-    console.print(f"[cyan]发现 {len(theme_collection.themes)} 个主题[/cyan]")
-    
-    # Initialize LLM client
+    # Initialize Engine
     try:
         from llm_ta.llm.client import LLMClient
-        prompts_path = Path.cwd() / project.prompts_file
-        llm = LLMClient(prompts_file=prompts_path)
-    except ValueError as e:
+        llm = LLMClient(prompts_file=Path.cwd() / project.prompts_file)
+        engine = ReportingEngine(llm)
+        
+        # Load codes context
+        consolidated_path = project.get_data_path("codebook_consolidated.json")
+        codebook_path = project.get_data_path(project.codebook_file)
+        
+        codes_lookup = {}
+        if consolidated_path.exists():
+            data = load_json(consolidated_path)
+            for c in data:
+                # Map to standard format for engine, include participant from first occurrence
+                codes_lookup[c["id"]] = {
+                    "text": c["name"],
+                    "source_quote": c["occurrences"][0]["source_quote"] if c["occurrences"] else "",
+                    "participant_id": c["occurrences"][0]["participant_id"] if c["occurrences"] else ""
+                }
+        elif codebook_path.exists():
+            data = load_json(codebook_path)
+            for c in data:
+                codes_lookup[c["id"]] = {
+                    "text": c["text"],
+                    "source_quote": c["source_quote"],
+                    "participant_id": c.get("participant_id", "")
+                }
+    except Exception as e:
         console.print(f"[red]错误: {e}[/red]")
         raise typer.Exit(1)
-    
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("生成洞见...", total=None)
         
-        # Load codebook to get source quotes
-        codebook_path = project.get_data_path(project.codebook_file)
-        codes_lookup = {}
-        if codebook_path.exists():
-            codebook_data = load_json(codebook_path)
-            codes_lookup = {c["id"]: c for c in codebook_data}
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console) as progress:
+        progress.add_task("生成报告中...", total=None)
         
-        # Build themes_data with source quotes
+        # Build theme context with quotes
         themes_data = []
         for t in theme_collection.themes:
-            codes_with_quotes = []
-            for code_id in t.code_ids:
-                if code_id in codes_lookup:
-                    c = codes_lookup[code_id]
-                    codes_with_quotes.append({
-                        "id": code_id,
-                        "text": c.get("text", ""),
-                        "source_quote": c.get("source_quote", ""),
-                        "participant_id": c.get("participant_id", ""),
-                    })
+            codes_in_theme = []
+            for cid in t.code_ids:
+                if cid in codes_lookup:
+                    codes_in_theme.append(codes_lookup[cid])
+            
             themes_data.append({
                 "id": t.id,
                 "name": t.name,
                 "description": t.description,
-                "codes": codes_with_quotes,
+                "codes": codes_in_theme
             })
-        
-        insights = llm.generate_insights(
-            themes=themes_data,
-            research_questions=project.research_questions,
+            
+        insights, discussion = engine.generate_insights_and_discussion(
+            themes_data, project.research_questions, project.background
         )
         
-        progress.update(task, description="生成Discussion...")
-        
-        discussion = llm.generate_discussion(
-            themes=themes_data,
-            insights=insights,
-            research_questions=project.research_questions,
-            background=project.background,
-        )
-    
-    # Save JSON data
-    insights_json_path = project.get_data_path(project.insights_file)
-    save_json({"insights": insights, "discussion": discussion}, insights_json_path)
-    
-    # Generate report markdown with discussion
-    parser.generate_report(
-        themes=themes_data,
-        insights=insights,
-        discussion=discussion,
-        output_path=report_md_path,
-        project_name=project.name,
-    )
+    # Save results
+    save_json({"insights": insights, "discussion": discussion}, project.get_data_path(project.insights_file))
+    parser.generate_report(themes_data, insights, report_md_path, project.name, discussion)
     
     console.print(f"\n[green]✓ 报告生成成功[/green]")
-    console.print(f"  JSON数据: {insights_json_path}")
+    console.print(f"  Markdown: {report_md_path}")
     console.print(f"  Markdown: {report_md_path}")
     console.print("\n[cyan]请根据报告内容完成论文写作。[/cyan]")
 
