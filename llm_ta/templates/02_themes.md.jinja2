@@ -1,0 +1,27 @@
+# {{ project_name }} - 主题分析
+
+> 以下是基于已选编码生成的初步主题。
+> 您可以：移动编码到其他主题、修改主题名称、合并或拆分主题。
+> **注意**: 请勿修改 `<!-- THEME_ID: ... -->` 和 `<!-- CODE_ID: ... -->` 注释。
+
+{% for theme in themes %}
+### {{ theme.name }}
+<!-- THEME_ID: {{ theme.id }} -->
+{{ theme.description }}
+
+{% for code_id in theme.code_ids %}
+- **{{ code_id }}**: {{ codes_text.get(code_id, code_id) }}
+  {% if codes_quote.get(code_id) %}- _"{{ codes_quote.get(code_id) }}"_ ({{ codes_participant.get(code_id, '') }}){% endif %}
+  <!-- CODE_ID: {{ code_id }} -->
+{% endfor %}
+
+{% endfor %}
+
+---
+
+## 使用说明
+
+1. 修改 `###` 后的文字来调整主题名称
+2. 将编码条目剪切/粘贴到其他主题下进行重新分类
+3. 添加新的 `### 主题名` 来创建新主题
+4. 完成后运行 `llm-ta report` 生成最终报告

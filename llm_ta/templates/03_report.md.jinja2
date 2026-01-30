@@ -1,0 +1,79 @@
+# {{ project_name }} - Analysis Report
+
+## Interview Results
+
+{% for theme in themes %}
+### {{ theme.name }}
+
+{{ theme.description }}
+
+{% if theme.codes %}
+**Supporting Evidence:**
+
+{% for code in theme.codes %}
+> "{{ code.source_quote }}" — {{ code.participant_id }}
+
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+---
+
+## Discussion
+
+{% if discussion %}
+{# --- Research Questions --- #}
+{% if discussion.rq_answers %}
+### Research Questions Summary
+{% for rq in discussion.rq_answers %}
+**{{ rq.question }}**
+
+{{ rq.answer }}
+
+{% endfor %}
+{% elif insights.research_question_linkage %}
+### Research Questions Summary
+{% for rq in insights.research_question_linkage %}
+**{{ rq.rq }}**
+
+{{ rq.answer }}
+
+{% endfor %}
+{% endif %}
+
+{# --- Discussion Content --- #}
+{% if discussion.sections %}
+{% for section in discussion.sections %}
+### {{ section.title }}
+
+{{ section.content }}
+
+{% endfor %}
+{% elif discussion.discussion_section %}
+{# Handle alternative structure #}
+{% set ds = discussion.discussion_section %}
+{% if ds.summary_of_findings %}
+### Summary of Findings
+{{ ds.summary_of_findings }}
+{% endif %}
+
+{% if ds.interpretation_and_context %}
+### Interpretation and Context
+{{ ds.interpretation_and_context }}
+{% endif %}
+
+
+{% endif %}
+
+{% else %}
+> Please complete the Discussion section based on the above analysis.
+> The content above was generated with LLM assistance. Please review and revise according to your research context.
+{% endif %}
+
+---
+
+## Notes
+
+- `[CITE]` markers indicate where citations should be added
+- Review each section for accuracy against your data

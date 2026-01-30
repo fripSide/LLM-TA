@@ -14,11 +14,26 @@
 
 软件架构如图 [架构图](doc/llm-assisted-ta.png)，
 
-设计思路见文档：[@DESIGN.md](DESIGN.md) 
+设计思路见文档：[@DESIGN.md](doc/DESIGN.md) 
 
 使用流程：
-- 用户先设置研究背景，关键研究问题（Research Questions）
-- 用户提交interview问题，和回答的文档（已经清理好， 问题和答案一一对应好了的json格式）
+- 用户先设置研究背景，关键研究问题（Research Questions），以及具体访谈问题（Interview Questions，回答RQ）
+- 用户提交Interview Question和回答的文档（已经清理好， 问题和答案一一对应好了的json格式）
 - LLM生成初步codebook，用户调整code
 - LLM生成初步主题 (overarching theme)，用户分析调整主题，完成论文的Inteview Results一章的写作
 - LLM继续参考一开始的Research Questions，整理主题提炼high level insight，帮助用户完成Disussion章节的写作
+
+
+
+### My User Study方法论与要点
+
+安全方向的User Study调研 用户或者开发者 看法。
+
+分析过程：
+inductive code -> sub-theme -> overarching theme -> Results -> Insights (Discussion)
+
+写作布局：
+Results：放overarching theme，包含大量用户原话
+Discussion: 放回答Research Questions的洞察
+
+user study论文的discussion不需要future work和limitation。主要是总结Results中的Insights并回答前面的research questions。
