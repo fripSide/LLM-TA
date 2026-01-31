@@ -141,9 +141,10 @@ class TestRealLLMWorkflow:
         log("✓ Import completed")
         
         # Step 3: Coding (real LLM call)
+        # Use per-participant strategy for faster test execution (3 LLM calls vs 14 for per-question)
         log("⏳ Step 3/6: Coding interviews (LLM call, ~30-60s)...")
         start = time.time()
-        result = run_llm_ta("coding", test_workspace)
+        result = run_llm_ta("coding --strategy per-participant", test_workspace)
         elapsed = time.time() - start
         assert result.returncode == 0, f"Coding failed: {result.stderr}"
         assert (test_workspace / "data" / "codebook.json").exists()

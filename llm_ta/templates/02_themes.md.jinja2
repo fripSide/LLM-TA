@@ -9,11 +9,26 @@
 <!-- THEME_ID: {{ theme.id }} -->
 {{ theme.description }}
 
+{% if theme.sub_themes %}
+{% for sub in theme.sub_themes %}
+#### {{ sub.name }}
+<!-- SUBTHEME_ID: {{ sub.id }} -->
+{{ sub.description }}
+
+{% for code_id in sub.code_ids %}
+- **{{ code_id }}**: {{ codes_text.get(code_id, code_id) }}
+  {% if codes_quote.get(code_id) %}- _"{{ codes_quote.get(code_id) }}"_ ({{ codes_participant.get(code_id, '') }}){% endif %}
+  <!-- CODE_ID: {{ code_id }} -->
+{% endfor %}
+
+{% endfor %}
+{% else %}
 {% for code_id in theme.code_ids %}
 - **{{ code_id }}**: {{ codes_text.get(code_id, code_id) }}
   {% if codes_quote.get(code_id) %}- _"{{ codes_quote.get(code_id) }}"_ ({{ codes_participant.get(code_id, '') }}){% endif %}
   <!-- CODE_ID: {{ code_id }} -->
 {% endfor %}
+{% endif %}
 
 {% endfor %}
 

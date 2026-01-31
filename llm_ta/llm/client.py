@@ -63,6 +63,40 @@ class LLMClient:
         )
         return response.choices[0].message.content or ""
     
+    def _repair_json(self, text: str) -> str:
+        """Attempt to repair common JSON issues from LLM responses."""
+        import re
+        
+        # Remove trailing commas before closing brackets
+        text = re.sub(r',(\s*[\]}])', r'\1', text)
+        
+        # Add missing commas between objects in arrays: }{ → },{
+        text = re.sub(r'\}(\s*)\{', r'},\1{', text)
+        
+        # Add missing commas after strings before new keys: "..." "key" → "...", "key"
+        text = re.sub(r'(")\s*\n(\s*")', r'\1,\n\2', text)
+        
+        # Fix unescaped quotes in strings (basic heuristic)
+        # This handles: "text with "quote" inside" -> "text with \"quote\" inside"
+        # Only do this if the line looks like it has an issue
+        lines = text.split('\n')
+        fixed_lines = []
+        for line in lines:
+            # Count unescaped quotes
+            quote_count = len(re.findall(r'(?<!\\)"', line))
+            if quote_count > 2 and ':' in line:
+                # Likely a string value with embedded quotes
+                # Try to fix by escaping internal quotes
+                match = re.match(r'^(\s*"[^"]+"\s*:\s*)"(.*)"\s*(,?)$', line)
+                if match:
+                    prefix, value, suffix = match.groups()
+                    # Escape internal quotes
+                    value = value.replace('"', '\\"')
+                    line = f'{prefix}"{value}"{suffix}'
+            fixed_lines.append(line)
+        
+        return '\n'.join(fixed_lines)
+    
     def chat_json(
         self,
         messages: list[dict[str, str]],
@@ -106,12 +140,19 @@ class LLMClient:
                 # Remove markdown formatting if still present
                 text = text.replace("```json", "").replace("```", "").strip()
                 
-                return json.loads(text)
+                # Try parsing as-is first
+                try:
+                    return json.loads(text)
+                except json.JSONDecodeError:
+                    # Try repairing the JSON
+                    repaired = self._repair_json(text)
+                    return json.loads(repaired)
+                    
             except (json.JSONDecodeError, ValueError) as e:
                 print(f"JSON Parse Error (Attempt {attempt + 1}/{retries}): {e}")
                 last_error = e
-                # Optionally increase temperature or add instruction about valid JSON?
-                # For now just retry
+                # Retry with slightly higher temperature to get different output
+                temperature = min(0.7, temperature + 0.1)
         
         # If all retries fail
         print(f"Failed to parse JSON after {retries} attempts.")
@@ -139,6 +180,45 @@ class LLMClient:
         
         return self._extract_list(self.chat_json(messages), "codes")
     
+    def generate_codes_for_question(
+        self,
+        question: str,
+        answers: list[dict],  # [{participant_id, answer}, ...]
+        research_questions: list[str],
+    ) -> list[dict]:
+        """Generate codes from all participants' answers to a single question.
+        
+        This reduces context length by processing one question at a time
+        instead of all questions for one participant.
+        """
+        system_prompt, user_template = self._get_prompts("coding_by_question")
+        
+        # Filter out empty answers
+        valid_answers = [a for a in answers if a.get('answer', '').strip()]
+        participant_count = len(valid_answers)
+        expected_codes = participant_count * 4  # Target 3-5, use 4 as midpoint
+        
+        # Format answers as a list
+        answers_text = "\n\n".join(
+            f"**{a['participant_id']}**: {a['answer']}"
+            for a in valid_answers
+        )
+        
+        user_prompt = user_template.format(
+            research_questions="\n".join(f"- {rq}" for rq in research_questions),
+            question=question,
+            answers=answers_text,
+            participant_count=participant_count,
+            expected_codes=expected_codes,
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        
+        return self._extract_list(self.chat_json(messages), "codes")
+    
     def generate_themes(
         self,
         codes: list[dict],
@@ -150,6 +230,71 @@ class LLMClient:
         user_prompt = user_template.format(
             research_questions="\n".join(f"- {rq}" for rq in research_questions),
             codes=json.dumps(codes, ensure_ascii=False, indent=2),
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        
+        return self._extract_list(self.chat_json(messages), "themes")
+    
+    def merge_codes(
+        self,
+        codes: list[dict],
+        research_questions: list[str],
+    ) -> list[dict]:
+        """Merge codes from multiple questions, removing duplicates and combining similar codes."""
+        system_prompt, user_template = self._get_prompts("merge_codes")
+        
+        user_prompt = user_template.format(
+            research_questions="\n".join(f"- {rq}" for rq in research_questions),
+            codes_json=json.dumps(codes, ensure_ascii=False, indent=2),
+            total_codes=len(codes),
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        
+        return self._extract_list(self.chat_json(messages, max_tokens=16384), "codes")
+    
+    def generate_sub_themes(
+        self,
+        codes: list[dict],
+        target_rq: str,
+        rq_id: str,
+        research_questions: list[str],
+    ) -> list[dict]:
+        """Generate sub-themes for a specific research question."""
+        system_prompt, user_template = self._get_prompts("sub_theming")
+        
+        user_prompt = user_template.format(
+            target_rq=target_rq,
+            rq_id=rq_id,
+            research_questions="\n".join(f"- {rq}" for rq in research_questions),
+            codes=json.dumps(codes, ensure_ascii=False, indent=2),
+        )
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+        
+        return self._extract_list(self.chat_json(messages), "sub_themes")
+    
+    def generate_major_themes(
+        self,
+        sub_themes_by_rq: dict[str, list[dict]],
+        research_questions: list[str],
+    ) -> list[dict]:
+        """Synthesize sub-themes into major themes."""
+        system_prompt, user_template = self._get_prompts("major_theming")
+        
+        user_prompt = user_template.format(
+            research_questions="\n".join(f"- {rq}" for rq in research_questions),
+            sub_themes_by_rq=json.dumps(sub_themes_by_rq, ensure_ascii=False, indent=2),
         )
         
         messages = [
@@ -185,6 +330,7 @@ class LLMClient:
         insights: dict,
         research_questions: list[str],
         background: str = "",
+        raw_data_context: str = "",
     ) -> dict:
         """Generate Discussion section draft for academic paper."""
         system_prompt, user_template = self._get_prompts("discussion")
@@ -194,6 +340,7 @@ class LLMClient:
             research_questions="\n".join(f"- {rq}" for rq in research_questions),
             themes=json.dumps(themes, ensure_ascii=False, indent=2),
             insights=json.dumps(insights, ensure_ascii=False, indent=2),
+            raw_data_context=raw_data_context,
         )
         
         messages = [

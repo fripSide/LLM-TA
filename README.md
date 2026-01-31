@@ -2,6 +2,13 @@
 
 基于 LLM 的主题分析工具，帮助进行 User Study 定性分析。
 
+## 主要特性
+
+- **Raw Code Preservation**: 支持直接基于海量原始编码（Raw Codes）生成主题，保留数据的丰富性。
+- **Hierarchical Theming**: 支持生成层级化主题（Major Themes -> Sub-themes）。
+- **Enhanced Reporting**: 报告生成阶段自动读取原始访谈数据，提供更有深度的讨论（Discussion）。
+- **Flexible Workflow**: 支持精简流程直出结果，也支持中间步骤的人工干预。
+
 ## 安装与运行
 
 ### 方式 1: 安装 (推荐)
@@ -35,29 +42,47 @@ LLM_BASE_URL=https://api.openai.com/v1
 LLM_MODEL=gpt-4
 ```
 
-## 快速开始
+## 快速开始 (精简流程)
+
+这是推荐的高效分析流程：
 
 ```bash
-# 创建工作目录
+# 1. 创建工作目录并初始化
 mkdir workspace && cd workspace
-
-# 从 example 目录的配置初始化
 llm-ta init --from-md ../example/project.md --lang en
 
-# 导入访谈数据
+# 2. 导入访谈数据
 llm-ta import ../example/interviews.json
 
-# 生成编码 (编辑 01_coding_draft.md 勾选编码)
-llm-ta coding
+# 3. 生成原始编码 (按问题生成)
+# 输出: 01_coding_draft.md (建议快速浏览但不必逐个勾选，默认全选)
+llm-ta coding --strategy per-question
 
-# 【新增】合并同义编码 (编辑 01_consolidated_coding.md 审查合并)
+# 4. 生成层级主题 (使用原始编码)
+# 使用 --raw (使用合并前的600多个主题)，或者使用 --consolidated (使用合并后的100多个主题)
+# 使用 --hierarchical 生成子主题结构
+# 输出: 02_themes_draft.md (建议编辑调整结构)
+llm-ta theming --raw --hierarchical
+
+# 5. 生成报告
+# 自动读取原始访谈上下文，生成更有深度的 Findings 和 Discussion
+# 输出: 03_report.md
+llm-ta report
+```
+
+### 完整流程 (含语义合并)
+
+如果你需要生成附录用的 Coding Book，可以增加合并步骤：
+
+```bash
+# ... (在 Coding 之后) ...
+
+# 【可选】合并同义编码
+# 输出: 01_consolidated_coding.md
 llm-ta consolidate
 
-# 生成主题 (编辑 02_themes_draft.md 调整主题)
-llm-ta theming
-
-# 生成报告 (含 Interview Results 和 Discussion)
-llm-ta report
+# 基于合并后的编码生成主题 (不加 --raw)
+llm-ta theming --hierarchical
 ```
 
 ## 项目结构
@@ -68,95 +93,54 @@ workspace/
 ├── prompts.md                 # 提示词配置 (可自定义)
 ├── .env                       # API 配置
 ├── data/                      # JSON 数据
-│   ├── interviews.json
-│   ├── codebook.json
-│   ├── codebook_consolidated.json  # 合并后的编码本
-│   ├── themes.json
-│   └── insights.json
-├── 01_coding_draft.md         # 编码草稿 (用户编辑)
-├── 01_consolidated_coding.md  # 合并后编码 (用户审查)
-├── 02_themes_draft.md         # 主题草稿 (用户编辑)
-└── 03_report.md               # 最终报告
+│   ├── interviews.json        # 原始访谈数据
+│   ├── codes_by_question/     # 按问题分类的原始编码
+│   ├── codebook.json          # 汇总编码
+│   ├── themes.json            # 主题结构
+│   └── insights.json          # 洞察与讨论数据
+├── 01_coding_draft.md         # 编码展示
+├── 02_themes_draft.md         # 主题草稿 (用户编辑此文件调整主题)
+└── 03_report.md               # 最终报告 (Markdown)
 ```
 
 ## 命令参考
 
-| 命令 | 功能 |
-|------|------|
-| `llm-ta init` | 初始化项目 |
-| `llm-ta import <file>` | 导入访谈数据 |
-| `llm-ta coding` | 生成初始编码 |
-| `llm-ta consolidate` | **【新增】** 合并同义编码，减少冗余 |
-| `llm-ta theming` | 生成主题分析 (支持合并后的编码) |
-| `llm-ta report` | 生成最终报告 (含 Results 和 Discussion) |
-| `llm-ta check <file>` | 检查 Markdown 格式 |
-| `llm-ta status` | 显示项目状态 |
+| 命令 | 参数示例 | 功能 |
+|------|----------|------|
+| `llm-ta init` | `--from-md` | 初始化项目 |
+| `llm-ta import` | `<file>` | 导入访谈数据 |
+| `llm-ta coding` | `--strategy per-question` | 生成初始编码 |
+| `llm-ta consolidate` | | **【可选】** 合并同义编码（用于附录） |
+| `llm-ta theming` | `--raw --hierarchical` | **【核心】** 生成层级主题 (Sub-themes -> Major Themes) |
+| `llm-ta report` | | **【核心】** 生成最终报告 (结合原始访谈数据) |
+| `llm-ta check` | `<file>` | 检查 Markdown 格式 |
 
-## 迭代工作流
+## 进阶功能
 
-本工具支持迭代式的主题分析流程：
+### Hierarchical Theming (层级主题)
 
-```
-         ┌─────────────────────────────────────────────────────────────┐
-         │                    Iterative TA Workflow                    │
-         └─────────────────────────────────────────────────────────────┘
-                                      │
-    ┌──────────────┬──────────────────┼──────────────────┬─────────────┐
-    ▼              ▼                  ▼                  ▼             ▼
-┌────────┐   ┌───────────┐   ┌──────────────┐   ┌──────────┐   ┌────────┐
-│ coding │ → │consolidate│ → │   theming    │ → │  report  │ → │ output │
-└────────┘   └───────────┘   └──────────────┘   └──────────┘   └────────┘
-    │              │                  │                               │
-    ▼              ▼                  ▼                               ▼
-Raw Codes    Merged Codes         Themes              Final Report (MD)
- (JSON)        (JSON/MD)           (JSON)           Results + Discussion
-```
+使用 `llm-ta theming --hierarchical`：
+1. **Sub-themes**: 先针对每个 Research Question 生成子主题。
+2. **Major Themes**: 再将子主题聚类为 High-level Major Themes。
+3. **Caching**: 支持断点续传（已生成的 RQ 子主题会自动缓存）。
 
-### Consolidate 阶段说明
+### Enhanced Reporting (深度报告)
 
-`llm-ta consolidate` 命令会：
-1. 读取所有原始编码 (`codebook.json`)
-2. 使用 LLM 识别语义相似的编码
-3. 合并同义编码，生成统一的编码本
-4. 保留所有原始证据链 (quotes + participant_id)
-5. 输出 `01_consolidated_coding.md` 供用户审查
-
-## 自定义提示词
-
-编辑 `prompts.md` 可针对不同分析阶段深度定制 LLM 提示词。每个阶段支持特定的变量占位符：
-
-| 阶段 | 变量 (占位符) | 描述 |
-| :--- | :--- | :--- |
-| **Coding** | `{research_questions}`, `{interview_text}` | 用于从原始访谈文本中提取编码 |
-| **Consolidate** | `{codes_json}` | 将多个访谈的原始编码合并为统一概念 |
-| **Theming** | `{codes_json}`, `{research_questions}` | 从合并后的编码中聚类生成主题 |
-| **Insight** | `{themes_json}`, `{research_questions}` | 针对研究问题提取高层洞察 |
-| **Discussion** | `{themes}`, `{insights}`, `{background}` | 编写学术讨论部分 |
-
-**示例配置 (`prompts.md`):**
-
-```markdown
-## Consolidate Stage
-
-### User Prompt
-这里是原始编码列表：
-{codes_json}
-
-请将意义相同的编码合并，并保留 "original_code_ids"。
-使用 JSON 格式输出。
-```
-
-> [!TIP]
-> 提示词文件中必须使用单花括号 `{var}` 作为占位符。程序在运行时会自动注入对应的数据。
+`llm-ta report` 命令会自动加载 `data/interviews.json`，并将相关的原始回答（Raw Answers）作为上下文传递给 LLM。这使得生成的 Discussion 部分能够：
+- 引用具体的用户原话。
+- 提供比单纯基于主题更丰富的数据支持。
+- 针对 Research Question 进行直接回应。
 
 ## 访谈数据格式
+
+`interviews.json` 示例：
 
 ```json
 [
   {
     "participant_id": "P01",
     "responses": [
-      {"question": "问题1", "answer": "回答..."}
+      {"question": "How do you manage passwords?", "answer": "I use a notebook..."}
     ]
   }
 ]
@@ -164,19 +148,10 @@ Raw Codes    Merged Codes         Themes              Final Report (MD)
 
 ## 测试
 
-运行测试套件：
-
 ```bash
-pip install pytest
-python -m pytest tests/ -v
+# 测试全部
+pytest tests/test_e2e_repro.py
+
+# 通用测试脚本 (指向你的项目路径)
+TEST_PROJECT_PATH=/path/to/your/project pytest tests/test_e2e_repro.py -v -s
 ```
-
-## 架构
-
-核心逻辑位于 `llm_ta/analysis/` 模块，已与 CLI 解耦：
-
-- `coding.py`: 编码生成与合并引擎
-- `theming.py`: 主题分析引擎
-- `reporting.py`: 报告生成引擎
-
-详见 [DESIGN.md](doc/DESIGN.md)

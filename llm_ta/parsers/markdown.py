@@ -120,40 +120,68 @@ class MarkdownParser:
         content = path.read_text(encoding="utf-8")
         consolidated_codes = []
         
-        # Split by theme headers (which are consolidated codes in this context)
-        # Using ### [x] C_NEW_01: Name
-        parts = re.split(r'(^###\s+\[[ xX]\]\s+[^:]+:.+?$)', content, flags=re.MULTILINE)
+        # Determine format: Header-based (### [x] ID) or List-based (- [x] **ID**)
+        # The CLI currently generates List-based format.
         
-        # This is a bit complex, let's use a simpler pattern-based approach for now
-        # Actually, let's keep it simple for the first iteration.
-        # I'll implement a robust parser here.
+        # Regex patterns for List-based format
+        checkbox_pattern = re.compile(
+            r'-\s*\[([ xX])\]\s*\*\*([^*]+)\*\*:\s*(.+?)(?=\n|$)'
+        )
+        desc_pattern = re.compile(
+            r'^\s+-\s*定义:\s*(.+?)(?=\n|$)'
+        )
+        # Matches: - (P25): "quote"
+        occ_pattern = re.compile(
+            r'^\s+-\s*\(([^)]+)\):\s*["\"](.+?)["\"]'
+        )
         
-        header_pattern = re.compile(r'^###\s+\[([ xX])\]\s+([^:]+):\s*(.+?)$', re.MULTILINE)
-        
-        # We need to re-import ConsolidatedCode and CodeOccurence inside for type safety if needed
         from llm_ta.models.coding import ConsolidatedCode, CodeOccurence
         
-        for i in range(1, len(parts), 2):
-            header = parts[i]
-            body = parts[i+1] if i+1 < len(parts) else ""
+        lines = content.split('\n')
+        i = 0
+        
+        while i < len(lines):
+            line = lines[i]
+            checkbox_match = checkbox_pattern.match(line.strip())
             
-            match = header_pattern.match(header.strip())
-            if match:
-                selected = match.group(1).lower() == 'x'
-                code_id = match.group(2).strip()
-                name = match.group(3).strip()
+            if checkbox_match:
+                selected = checkbox_match.group(1).lower() == 'x'
+                code_id = checkbox_match.group(2).strip()
+                name = checkbox_match.group(3).strip()
                 
-                # Parse description
-                desc_match = re.search(r'\*\*Definition\*\*:\s*(.+?)(?=\n|$)', body)
-                description = desc_match.group(1).strip() if desc_match else ""
-                
-                # Parse evidence (occurrences)
+                description = ""
                 occurrences = []
-                for occ_match in re.finditer(r'-\s*\(([^)]+)\):\s*["\"](.+?)["\"]', body):
-                    occurrences.append(CodeOccurence(
-                        participant_id=occ_match.group(1),
-                        source_quote=occ_match.group(2)
-                    ))
+                
+                # Scan following lines for nested info until next top-level item or divider
+                j = i + 1
+                while j < len(lines):
+                    sub_line = lines[j]
+                    stripped_sub = sub_line.strip()
+                    
+                    if not stripped_sub:
+                        j += 1
+                        continue
+                        
+                    # Stop if we hit a new list item, header, or divider
+                    if stripped_sub.startswith('- [') or stripped_sub.startswith('#') or stripped_sub.startswith('---'):
+                        break
+                        
+                    # Check for description
+                    desc_match = desc_pattern.match(sub_line) # use valid indent check if needed, but match should suffice
+                    if desc_match:
+                        description = desc_match.group(1).strip()
+                        j += 1
+                        continue
+                        
+                    # Check for occurrences
+                    occ_match = occ_pattern.match(sub_line)
+                    if occ_match:
+                        occurrences.append(CodeOccurence(
+                            participant_id=occ_match.group(1).strip(),
+                            source_quote=occ_match.group(2).strip()
+                        ))
+                    
+                    j += 1
                 
                 consolidated_codes.append(ConsolidatedCode(
                     id=code_id,
@@ -162,7 +190,11 @@ class MarkdownParser:
                     occurrences=occurrences,
                     selected=selected
                 ))
-        
+                
+                i = j - 1 # Main loop increment will handle the +1
+                
+            i += 1
+            
         return consolidated_codes
 
     def _parse_codes(self, path: Path) -> Codebook:
@@ -252,6 +284,7 @@ class MarkdownParser:
                     name=theme_match.group(1).strip(),
                     description="",
                     code_ids=[],
+                    sub_themes=[],
                 )
             elif current_theme:
                 # Parse theme content
@@ -259,12 +292,18 @@ class MarkdownParser:
                 if id_match:
                     current_theme.id = id_match.group(1)
                 
-                # Extract code IDs
-                for code_match in code_id_pattern.finditer(part):
+                # Check for sub-themes (#### SubTheme)
+                sub_parts = re.split(r'(^####\s+.+?$)', part, flags=re.MULTILINE)
+                
+                # First part is main theme description/codes (before any sub-theme)
+                main_part = sub_parts[0]
+                
+                # Extract code IDs for main theme (if any flat codes)
+                for code_match in code_id_pattern.finditer(main_part):
                     current_theme.code_ids.append(code_match.group(1))
                 
-                # Extract description (first paragraph after ID)
-                lines = part.strip().split('\n')
+                # Extract main description
+                lines = main_part.strip().split('\n')
                 desc_lines = []
                 for line in lines:
                     line = line.strip()
@@ -272,9 +311,52 @@ class MarkdownParser:
                         desc_lines.append(line)
                     elif line.startswith('-'):
                         break
-                
                 if desc_lines:
                     current_theme.description = ' '.join(desc_lines)
+                
+                # Process sub-themes
+                from llm_ta.models.theme import SubTheme
+                sub_theme_pattern = re.compile(r'^####\s+(.+?)$', re.MULTILINE)
+                sub_id_pattern = re.compile(r'<!--\s*SUBTHEME_ID:\s*(\S+)\s*-->')
+                
+                for k in range(1, len(sub_parts), 2):
+                    sub_header = sub_parts[k]
+                    sub_body = sub_parts[k+1] if k+1 < len(sub_parts) else ""
+                    
+                    sub_match = sub_theme_pattern.match(sub_header.strip())
+                    if sub_match:
+                        sub_theme = SubTheme(
+                            id="",
+                            name=sub_match.group(1).strip(),
+                            description="",
+                            code_ids=[]
+                        )
+                        
+                        # Sub-theme ID
+                        sub_id_match = sub_id_pattern.search(sub_body)
+                        if sub_id_match:
+                            sub_theme.id = sub_id_match.group(1)
+                        elif current_theme.id:
+                             # Fallback ID generation
+                             sub_theme.id = f"{current_theme.id}.{len(current_theme.sub_themes)+1}"
+                        
+                        # Sub-theme codes
+                        for cm in code_id_pattern.finditer(sub_body):
+                            sub_theme.code_ids.append(cm.group(1))
+                        
+                        # Sub-theme description
+                        s_lines = sub_body.strip().split('\n')
+                        s_desc = []
+                        for sl in s_lines:
+                            sl = sl.strip()
+                            if sl and not sl.startswith('<!--') and not sl.startswith('-'):
+                                s_desc.append(sl)
+                            elif sl.startswith('-'):
+                                break
+                        if s_desc:
+                            sub_theme.description = ' '.join(s_desc)
+                            
+                        current_theme.sub_themes.append(sub_theme)
         
         if current_theme:
             themes.append(current_theme)

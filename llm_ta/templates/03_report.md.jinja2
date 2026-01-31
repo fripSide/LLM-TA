@@ -7,13 +7,37 @@
 
 {{ theme.description }}
 
-{% if theme.codes %}
+{# --- Check for Sub-themes (Hierarchical) --- #}
+{% if theme.sub_themes %}
+{% for sub in theme.sub_themes %}
+#### {{ sub.name }}
+
+{{ sub.description }}
+
+{% if sub.codes %}
 **Supporting Evidence:**
 
-{% for code in theme.codes %}
+{% for code in sub.codes[:3] %}
 > "{{ code.source_quote }}" — {{ code.participant_id }}
-
 {% endfor %}
+{% if sub.codes|length > 3 %}
+*(...and {{ sub.codes|length - 3 }} more codes)*
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+{# --- Check for Direct Codes (Flat) --- #}
+{% elif theme.codes %}
+**Supporting Evidence:**
+
+{% for code in theme.codes[:3] %}
+> "{{ code.source_quote }}" — {{ code.participant_id }}
+{% endfor %}
+{% if theme.codes|length > 3 %}
+*(...and {{ theme.codes|length - 3 }} more codes)*
+{% endif %}
+
 {% endif %}
 
 {% endfor %}

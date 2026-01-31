@@ -45,6 +45,95 @@ Please output in JSON format:
 Please extract codes comprehensively. Each interview should typically produce 20-40 codes.
 """
     },
+    "coding_by_question": {
+        "system": "You are an experienced qualitative research analyst skilled in thematic analysis methodology. You conduct thorough, nuanced coding that captures both explicit meanings and underlying patterns.",
+        "user": """You are performing Open Coding on user study interview data, analyzing responses to a single question across multiple participants.
+
+## Research Questions
+{research_questions}
+
+## Interview Question
+{question}
+
+## Participant Responses
+{answers}
+
+## Task
+Please carefully analyze the responses above and extract initial codes relevant to the research questions.
+
+**IMPORTANT**: Extract 3-5 codes per participant response. Look for:
+- Explicit statements and facts
+- Underlying attitudes and beliefs
+- Behavioral patterns
+- Emotional expressions
+- Comparisons and contrasts between participants
+
+For each code, provide:
+1. id: Code ID (format: C001, C002, ...)
+2. text: Code label/text (concise summary in English)
+3. source_quote: Supporting quote from the original text
+4. participant_id: The participant ID who provided this quote
+
+## Output Format
+Please output in JSON format:
+```json
+{{
+  "codes": [
+    {{
+      "id": "C001",
+      "text": "Code label in English",
+      "source_quote": "Original quote...",
+      "participant_id": "P01"
+    }}
+  ]
+}}
+```
+
+Be thorough and extract ALL meaningful codes. For {participant_count} participants, you should generate approximately {expected_codes} codes (3-5 per response).
+"""
+    },
+    "merge_codes": {
+        "system": "You are an experienced qualitative research analyst skilled in merging and de-duplicating codes from thematic analysis.",
+        "user": """You are MERGING codes from multiple interview questions into a unified codebook.
+
+## Research Questions
+{research_questions}
+
+## Codes to Merge ({total_codes} total)
+{codes_json}
+
+## Task
+Merge these codes by:
+1. **Remove exact duplicates**: Combine codes with identical meanings
+2. **Merge similar codes**: Combine semantically similar codes, keeping the best quote from each
+3. **Preserve unique codes**: Keep distinct codes verbatim
+
+For each merged code, provide:
+1. id: Keep one of the original IDs
+2. text: The code text (choose the clearest version)
+3. source_quote: The most illustrative quote (can combine multiple quotes with "..." separator)
+4. participant_id: If merged from multiple, use format "P01, P02, P03"
+
+## Output Format
+```json
+{{
+  "codes": [
+    {{
+      "id": "C001",
+      "text": "Code description",
+      "source_quote": "Representative quote...",
+      "participant_id": "P01, P02"
+    }}
+  ]
+}}
+```
+
+IMPORTANT:
+- Preserve code diversity - do NOT over-merge distinct concepts
+- Target: reduce by ~30-50% (remove true duplicates only)
+- Keep all quotes that provide unique insights
+"""
+    },
     "theming": {
         "system": "You are an experienced qualitative research analyst skilled in thematic analysis for clustering codes into themes.",
         "user": """You are clustering initial codes into Themes.
@@ -69,6 +158,7 @@ For each theme, provide:
    - Explain the patterns observed in the data
    - Set the context for the participant quotes (which will be automatically appended)
    - Do NOT explicitly list quotes or use placeholders like [Quote 1], as the full quotes will be rendered after this text.
+   - Be substantial enough to stand alone as a subsection result.
 4. code_ids: List of included code IDs
 
 ## Output Format
@@ -86,7 +176,92 @@ Please output in JSON format:
 }}
 ```
 
-Typically produce 3-6 themes. Ensure each code is assigned to a theme.
+Typically produce 5-8 themes. Ensure each code is assigned to a theme.
+"""
+    },
+    "sub_theming": {
+        "system": "You are an experienced qualitative research analyst performing hierarchical thematic analysis. You create focused sub-themes that directly address specific research questions.",
+        "user": """You are generating SUB-THEMES for a specific research question.
+
+## Target Research Question
+{target_rq}
+
+## All Research Questions (for context)
+{research_questions}
+
+## Codes Related to This Research Question
+{codes}
+
+## Task
+Create 3-5 focused sub-themes that directly address the target research question. Each sub-theme should:
+1. Capture a distinct aspect of the research question
+2. Group semantically related codes
+3. Be specific enough to provide actionable insights
+
+For each sub-theme, provide:
+1. id: Sub-theme ID (format: {rq_id}.1, {rq_id}.2, ...)
+2. name: Sub-theme name (in English)
+3. description: 1-2 sentences explaining this sub-theme
+4. code_ids: List of included code IDs
+
+## Output Format
+```json
+{{
+  "sub_themes": [
+    {{
+      "id": "{rq_id}.1",
+      "name": "Sub-theme Name",
+      "description": "This sub-theme captures...",
+      "code_ids": ["C001", "C003"]
+    }}
+  ]
+}}
+```
+
+Generate 4-7 sub-themes. Ensure all codes are assigned to exactly one sub-theme.
+"""
+    },
+    "major_theming": {
+        "system": "You are an experienced qualitative research analyst synthesizing sub-themes into major overarching themes for an academic paper.",
+        "user": """You are synthesizing SUB-THEMES into MAJOR THEMES.
+
+## Research Questions
+{research_questions}
+
+## Sub-Themes Grouped by Research Question
+{sub_themes_by_rq}
+
+## Task
+Create 4 major themes that synthesize the sub-themes above. Each major theme should:
+1. Combine related sub-themes across research questions
+2. Tell a coherent story about the findings
+3. Provide high-level insights suitable for a Results section
+
+For each major theme, provide:
+1. id: Theme ID (format: T01, T02, T03, T04)
+2. name: Theme name (in English)
+3. description: A detailed narrative (2-3 paragraphs) for the Results section that:
+   - Synthesizes findings across the included sub-themes
+   - Explains patterns and relationships
+   - Sets context for participant quotes (which will be automatically appended)
+   - Do NOT explicitly list quotes or use placeholders like [Quote 1], as the full quotes will be rendered after this text.
+4. sub_theme_ids: List of sub-theme IDs included in this theme
+
+## Output Format
+```json
+{{
+  "themes": [
+    {{
+      "id": "T01",
+      "name": "Major Theme Name",
+      "description": "This theme reveals that... The findings indicate...",
+      "sub_theme_ids": ["RQ1.1", "RQ1.2", "RQ2.3"]
+    }}
+  ]
+}}
+```
+
+Generate 5-7 major themes. Each sub-theme should be assigned to exactly one major theme.
 """
     },
     "insight": {
@@ -462,6 +637,9 @@ You are writing the Discussion section for an academic paper based on the Result
 
 ## Results (Themes & Findings)
 {themes}
+
+## Raw Data Sample (Context)
+{raw_data_context}
 
 ## Task
 Write a comprehensive Discussion section that answers the Research Questions.
